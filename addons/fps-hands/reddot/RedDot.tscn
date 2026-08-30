@@ -1,0 +1,28 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://addons/fps-hands/reddot/reddot.glb" id="1_model"]
+[ext_resource type="Script" path="res://addons/fps-hands/reddot/red_dot.gd" id="2_script"]
+[ext_resource type="Shader" path="res://addons/fps-hands/reddot/reticle.gdshader" id="3_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_reticle"]
+render_priority = 2
+shader = ExtResource("3_shader")
+
+[sub_resource type="QuadMesh" id="QuadMesh_reticle"]
+material = SubResource("ShaderMaterial_reticle")
+size = Vector2(0.0178, 0.0178)
+
+[node name="RedDot" type="Node3D"]
+script = ExtResource("2_script")
+
+[node name="Lift" type="Node3D" parent="."]
+
+[node name="Model" parent="Lift" instance=ExtResource("1_model")]
+
+[node name="Reticle" type="MeshInstance3D" parent="Lift"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0279, 0.012)
+cast_shadow = 0
+mesh = SubResource("QuadMesh_reticle")
+
+[node name="AimPoint" type="Node3D" parent="Lift"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0279, 0.012)

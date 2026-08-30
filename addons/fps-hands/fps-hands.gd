@@ -91,6 +91,8 @@ var muzzlePoint : Node3D
 
 var start_pos : Vector3
 var ads_pos : Vector3
+var ads_target : Vector3 # ads_pos corrected so the sight's AimPoint sits on the camera axis
+var aim_point : Node3D = null
 var ads : bool = false
 var start_fov : float
 
@@ -351,6 +353,8 @@ func take_weapon(inventory_index:int) -> void:
 	
 	start_pos = weapon.position
 	ads_pos = weapon.get_meta("ads_pos", start_pos)
+	ads_target = ads_pos
+	aim_point = weapon.find_child("AimPoint", true, false)
 	
 	max_magazine = weapon.get_meta("max_magazine",0)
 	magazine = inventory_weapon[1]
@@ -413,9 +417,19 @@ func _process(delta) -> void:
 				animation.active = false
 			else:
 				animation.active = true
+		# Sight alignment: while aiming and the gun is still (idle, animation paused),
+		# measure where the sight's AimPoint sits relative to the camera axis and shift
+		# the ADS target so it lands exactly on it (dot == crosshair == bullet path).
+		if ads and is_instance_valid(aim_point) and camera and animation and not animation.active:
+			var cl := camera.to_local(aim_point.global_position)
+			var err_world := camera.global_transform.basis * Vector3(cl.x, cl.y, 0.0)
+			var err_local := global_transform.basis.inverse() * err_world
+			ads_target = Vector3(weapon.position.x - err_local.x, weapon.position.y - err_local.y, ads_pos.z)
+		elif not ads:
+			ads_target = ads_pos
 		# ADS animation
-		if ads and weapon.position != ads_pos:
-			weapon.position = weapon.position.move_toward(ads_pos, weapon.get_meta("delta",1.5)*delta_multiplier*delta)
+		if ads and weapon.position != ads_target:
+			weapon.position = weapon.position.move_toward(ads_target, weapon.get_meta("delta",1.5)*delta_multiplier*delta)
 			if ads_dynamic_fov:
 				camera.fov = lerpf(camera.fov, start_fov-30, weapon.get_meta("delta",1.5)*delta_multiplier*delta)
 		if !ads and weapon.position != start_pos:

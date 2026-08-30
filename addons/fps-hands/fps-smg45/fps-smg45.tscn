@@ -1,6 +1,7 @@
 [gd_scene load_steps=22 format=3 uid="uid://dtxyoypudtllo"]
 
 [ext_resource type="PackedScene" uid="uid://1m63rxyd6siv" path="res://addons/fps-hands/fps-smg45/resources/fps_animated_smg.glb" id="1_yl4uh"]
+[ext_resource type="PackedScene" path="res://addons/fps-hands/reddot/RedDot.tscn" id="rd_sight"]
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_p57ah"]
 animation = &"fire"
@@ -213,3 +214,7 @@ anim_player = NodePath("../AnimationPlayer")
 
 [connection signal="animation_finished" from="AnimationTree" to="." method="_on_animation_tree_animation_finished"]
 [connection signal="animation_started" from="AnimationTree" to="." method="_on_animation_tree_animation_started"]
+
+[node name="RedDot" parent="Sketchfab_model/243f038534954d4d8381423b602d69f0_fbx/Object_2/RootNode/Object_4/smg45/base" instance=ExtResource("rd_sight")]
+transform = Transform3D(-110, 0, 0, 0, 110, 0, 0, 0, -110, 0, 12.7, 20)
+riser_height = 0.014

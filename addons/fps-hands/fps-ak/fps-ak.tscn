@@ -1,6 +1,7 @@
 [gd_scene load_steps=22 format=3 uid="uid://c3gbexxyter6w"]
 
 [ext_resource type="PackedScene" uid="uid://brmalx1j4qn8u" path="res://addons/fps-hands/fps-ak/reasources/fps_ak_animated.glb" id="1_d63oo"]
+[ext_resource type="PackedScene" path="res://addons/fps-hands/reddot/RedDot.tscn" id="rd_sight"]
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_vpbhs"]
 animation = &"fire"
@@ -93,7 +94,7 @@ graph_offset = Vector2(-262.841, -22.6944)
 
 [node name="fps-ak" instance=ExtResource("1_d63oo")]
 transform = Transform3D(0.015, 0, 0, 0, 0.015, 0, 0, 0, 0.015, -0.1, -0.4, 0.3)
-metadata/ads_pos = Vector3(0, -0.282, 0)
+metadata/ads_pos = Vector3(0, -0.282, 0.1)
 metadata/max_magazine = 30
 metadata/auto = true
 metadata/delta = 1.2
@@ -219,3 +220,6 @@ anim_player = NodePath("../AnimationPlayer")
 
 [connection signal="animation_finished" from="AnimationTree" to="." method="_on_animation_tree_animation_finished"]
 [connection signal="animation_started" from="AnimationTree" to="." method="_on_animation_tree_animation_started"]
+
+[node name="RedDot" parent="Sketchfab_model/a5167d948e6a4ec8bd09a04312151f71_fbx/Object_2/RootNode/Object_4/ak/base" instance=ExtResource("rd_sight")]
+transform = Transform3D(-100, 0, 0, 0, 100, 0, 0, 0, -100, 0, 13.2, 6)

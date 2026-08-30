@@ -1,6 +1,7 @@
 [gd_scene load_steps=22 format=3 uid="uid://f3wbdts18wdb"]
 
 [ext_resource type="PackedScene" uid="uid://dogb6smc7kdw4" path="res://addons/fps-hands/fps-sawnoff/resources/sawnoff_animated.glb" id="1_j2r4v"]
+[ext_resource type="PackedScene" path="res://addons/fps-hands/reddot/RedDot.tscn" id="rd_sight"]
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_x15dy"]
 animation = &"fire"
@@ -199,3 +200,7 @@ tree_root = SubResource("AnimationNodeStateMachine_flahj")
 anim_player = NodePath("../AnimationPlayer")
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." index="3"]
+
+[node name="RedDot" parent="Sketchfab_model/bd36959eb9f54254adda1d24204cd512_fbx/Object_2/RootNode/Object_4/sawnoff/front" instance=ExtResource("rd_sight")]
+transform = Transform3D(-110, 0, 0, 0, 110, 0, 0, 0, -110, 0, 3.2, 10)
+riser_height = 0.03
