@@ -38,6 +38,7 @@ var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var camera : Camera3D = get_node("Camera3D")
 var camera_start_position : Vector3
 var dir = Vector3.ZERO
+var bob_t := 0.0
 var running = false
 
 func _ready():
@@ -126,15 +127,18 @@ func _physics_process(delta):
 	
 	# Bobbing animation
 	if bobbing:
-		if velocity and is_on_floor():
-			var bob = Vector3.ZERO
-			var actual_bob_speed = velocity.length()/(SPEED/2) * BOB_SPEED
-			var actual_bob_size = velocity.length()/(SPEED/2) * BOB_SIZE
-			bob.y += sin(Engine.get_process_frames() * actual_bob_speed) * actual_bob_size
-			bob.x += cos(Engine.get_process_frames() * actual_bob_speed/2) * actual_bob_size * 2
-			camera.position += bob
-		elif camera.position != camera_start_position:
-			camera.position = lerp(camera.position, camera_start_position, 2 * (1/.3) * delta)
+		# Horizontal speed only - vertical (jump/fall) velocity must never drive bob,
+		# and bob is an absolute offset from the rest position (never accumulated).
+		var hvel := Vector2(velocity.x, velocity.z).length()
+		if hvel > 0.3 and is_on_floor():
+			var speed_k := clampf(hvel / (SPEED/2), 0.0, 6.5)
+			bob_t += delta * 60.0 * speed_k * BOB_SPEED
+			var bob := Vector3.ZERO
+			bob.y = sin(bob_t) * speed_k * BOB_SIZE
+			bob.x = cos(bob_t / 2) * speed_k * BOB_SIZE * 2
+			camera.position = camera.position.lerp(camera_start_position + bob, minf(12 * delta, 1.0))
+		else:
+			camera.position = camera.position.lerp(camera_start_position, minf(8 * delta, 1.0))
 
 
 func _on_fps_hands_give_damage(obj:Node3D, damage:float, point:Vector3):

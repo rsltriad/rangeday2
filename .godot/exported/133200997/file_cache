@@ -19,7 +19,7 @@ res://addons/fps-hands/fps-sawnoff/fps-sawnoff.tscn::bd4035211d97dcf04d870a74fc8
 res://addons/fps-hands/fps-smg45/resources/arms.tres::46ec66071ab0695c0ad0f4c8a8a0361a::1788077405::res://.godot/exported/133200997/export-f12b860c60470b379cfb74e57e8ddd65-arms.res
 res://addons/fps-hands/fps-smg45/resources/smg45.tres::ca1ec4cbd200271c840422ae11ff1f47::1788077405::res://.godot/exported/133200997/export-25892c977a69991bff7b4c3d47740549-smg45.res
 res://addons/fps-hands/fps-smg45/fps-smg45.tscn::7ae0c9ca2810326769e23fbf85a2d70f::1788077405::res://.godot/exported/133200997/export-7488569491dca22031c7896607bd6c88-fps-smg45.scn
-res://addons/fps-hands/muzzleflash/MuzzleFlash.tscn::7894d412596b70113e1bd249b3b09154::1788077405::res://.godot/exported/133200997/export-506387b8933ce3fceae067752b8b6943-MuzzleFlash.scn
+res://addons/fps-hands/muzzleflash/MuzzleFlash.tscn::8b404d2ef70719d85c1f4570f202fa1c::1788080351::res://.godot/exported/133200997/export-506387b8933ce3fceae067752b8b6943-MuzzleFlash.scn
 res://addons/fps-hands/muzzlesmoke/MuzzleSmoke.tscn::885f7dc9bde5ece5972236a387f1070c::1788077405::res://.godot/exported/133200997/export-7d4573078d6e221d7029861f894005f1-MuzzleSmoke.scn
 res://test/Player.tscn::5e19eea69efb3c0e45a73c9c2925db9d::1788077405::res://.godot/exported/133200997/export-937045e5491d0a7268ede54a12105568-Player.scn
 res://test/world.tscn::ba108f1bda348f49467605fb83e1a6dc::1788077405::res://.godot/exported/133200997/export-169c9a3b26aefcf8b19860e409d13f30-world.scn

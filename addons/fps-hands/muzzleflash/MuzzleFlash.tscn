@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://chpyd46tcdyxk" path="res://addons/fps-hands/muzzleflash/side.png" id="2_y2rbg"]
 
 [node name="MuzzleFlash" type="Node3D"]
-transform = Transform3D(66, 0, 0, 0, 66, 0, 0, 0, 66, 0, 0, 0)
+transform = Transform3D(28, 0, 0, 0, 28, 0, 0, 0, 28, 0, 0, 0)
 script = ExtResource("1_ke83n")
 
 [node name="Front" type="Sprite3D" parent="."]
@@ -30,13 +30,13 @@ texture = ExtResource("2_y2rbg")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 light_color = Color(0.819608, 0.533333, 0.160784, 1)
-light_energy = 0.1
+light_energy = 0.07
 light_size = 1.0
 omni_range = 2.0
 omni_attenuation = 2.0
 
 [node name="Timer" type="Timer" parent="."]
-wait_time = 0.03
+wait_time = 0.022
 one_shot = true
 autostart = true
 

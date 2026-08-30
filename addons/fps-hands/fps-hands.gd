@@ -304,6 +304,8 @@ func add_camera_shake(amount:float):
 func camera_shake():
 	if shake and camera:
 		var amount = pow(shake_current, 2)
+		if ads:
+			amount *= 0.3
 		camera.rotation.z = shake_max_roll * amount * randf_range(-1, 1)
 		camera.h_offset = shake_max_offset.x * amount * randf_range(-1, 1)
 		camera.v_offset = shake_max_offset.y * amount * randf_range(-1, 1)
@@ -427,10 +429,16 @@ func _physics_process(delta) -> void:
 	if sway and camera:
 		sway_rotation_target = camera.global_rotation.reflect(Vector3(0,1,0))
 		sway_rotation_target.y -= PI
-		rotation.y = lerp_angle(rotation.y, sway_rotation_target.y, delta*sway_look_sens)
-		rotation.x = lerp_angle(rotation.x, sway_rotation_target.x, delta*sway_look_sens)
-		rotation.z = lerp_angle(rotation.z, sway_rotation_target.z, delta*sway_look_sens)
-		position = position.lerp(camera.global_position, delta*sway_move_sens)
+		# While aiming, lock the rig to the camera so the sight stays on the screen centre.
+		var sway_k := minf(delta*sway_look_sens, 1.0)
+		var move_k := minf(delta*sway_move_sens, 1.0)
+		if ads:
+			sway_k = 1.0
+			move_k = 1.0
+		rotation.y = lerp_angle(rotation.y, sway_rotation_target.y, sway_k)
+		rotation.x = lerp_angle(rotation.x, sway_rotation_target.x, sway_k)
+		rotation.z = lerp_angle(rotation.z, sway_rotation_target.z, sway_k)
+		position = position.lerp(camera.global_position, move_k)
 	# Shake
 	if shake and camera and shake_current > 0:
 		shake_current = max(shake_current - shake_decay * delta, 0)
