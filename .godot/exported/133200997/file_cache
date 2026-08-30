@@ -21,5 +21,5 @@ res://addons/fps-hands/fps-smg45/resources/smg45.tres::ca1ec4cbd200271c840422ae1
 res://addons/fps-hands/fps-smg45/fps-smg45.tscn::7ae0c9ca2810326769e23fbf85a2d70f::1788077405::res://.godot/exported/133200997/export-7488569491dca22031c7896607bd6c88-fps-smg45.scn
 res://addons/fps-hands/muzzleflash/MuzzleFlash.tscn::8b404d2ef70719d85c1f4570f202fa1c::1788080351::res://.godot/exported/133200997/export-506387b8933ce3fceae067752b8b6943-MuzzleFlash.scn
 res://addons/fps-hands/muzzlesmoke/MuzzleSmoke.tscn::885f7dc9bde5ece5972236a387f1070c::1788077405::res://.godot/exported/133200997/export-7d4573078d6e221d7029861f894005f1-MuzzleSmoke.scn
-res://test/Player.tscn::5e19eea69efb3c0e45a73c9c2925db9d::1788077405::res://.godot/exported/133200997/export-937045e5491d0a7268ede54a12105568-Player.scn
+res://test/Player.tscn::1ef5a21102aa5228da7ed4def705bc2a::1788081063::res://.godot/exported/133200997/export-937045e5491d0a7268ede54a12105568-Player.scn
 res://test/world.tscn::ba108f1bda348f49467605fb83e1a6dc::1788077405::res://.godot/exported/133200997/export-169c9a3b26aefcf8b19860e409d13f30-world.scn

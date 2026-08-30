@@ -18,6 +18,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 near = 0.001
 
 [node name="FpsHands" type="Node3D" parent="Camera3D" node_paths=PackedStringArray("camera", "node_recoil_x", "node_recoil_y")]
+breath_while_ads = false
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 script = ExtResource("3_ottaa")
 inventory = {

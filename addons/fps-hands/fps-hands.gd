@@ -391,6 +391,19 @@ func _input(_event) -> void:
 			take_weapon(weapon_index-1)
 
 func _process(delta) -> void:
+	# Sway runs at render rate (not physics rate) so the gun never trails a frame
+	# behind the camera on fast flicks; lag is also hard-clamped to a few degrees.
+	if sway and camera:
+		sway_rotation_target = camera.global_rotation.reflect(Vector3(0,1,0))
+		sway_rotation_target.y -= PI
+		if ads:
+			rotation = sway_rotation_target
+		else:
+			var sway_k := minf(delta*sway_look_sens, 1.0)
+			rotation.y = _lag_clamp(lerp_angle(rotation.y, sway_rotation_target.y, sway_k), sway_rotation_target.y)
+			rotation.x = _lag_clamp(lerp_angle(rotation.x, sway_rotation_target.x, sway_k), sway_rotation_target.x)
+			rotation.z = _lag_clamp(lerp_angle(rotation.z, sway_rotation_target.z, sway_k), sway_rotation_target.z)
+		position = camera.global_position
 	if weapon != null:
 		# ADS animation
 		if ads and weapon.position != ads_pos:
@@ -409,6 +422,11 @@ func _process(delta) -> void:
 			elif auto_reload and Input.is_action_pressed(action_fire) and magazine == 0 and max_magazine > 0:
 				reload()
 
+const MAX_SWAY_LAG := 0.09 # ~5 degrees max trail on fast flicks
+func _lag_clamp(value:float, target:float) -> float:
+	var diff := wrapf(value - target, -PI, PI)
+	return target + clampf(diff, -MAX_SWAY_LAG, MAX_SWAY_LAG)
+
 func _physics_process(delta) -> void:
 	# Recoil
 	if recoiling.x + recoiling.y > 0 and recoil and node_recoil_x and node_recoil_y:
@@ -425,20 +443,6 @@ func _physics_process(delta) -> void:
 			recoiling.y /= 2
 			recoiling.y -= delta
 			node_recoil_y.rotation.y = lerp_angle(node_recoil_y.rotation.y, recoil_target.y, delta*25)
-	# Sway
-	if sway and camera:
-		sway_rotation_target = camera.global_rotation.reflect(Vector3(0,1,0))
-		sway_rotation_target.y -= PI
-		# While aiming, lock the rig to the camera so the sight stays on the screen centre.
-		var sway_k := minf(delta*sway_look_sens, 1.0)
-		var move_k := minf(delta*sway_move_sens, 1.0)
-		if ads:
-			sway_k = 1.0
-			move_k = 1.0
-		rotation.y = lerp_angle(rotation.y, sway_rotation_target.y, sway_k)
-		rotation.x = lerp_angle(rotation.x, sway_rotation_target.x, sway_k)
-		rotation.z = lerp_angle(rotation.z, sway_rotation_target.z, sway_k)
-		position = position.lerp(camera.global_position, move_k)
 	# Shake
 	if shake and camera and shake_current > 0:
 		shake_current = max(shake_current - shake_decay * delta, 0)

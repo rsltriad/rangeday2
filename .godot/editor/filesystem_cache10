@@ -5,7 +5,7 @@ icon.svg::CompressedTexture2D::4227245813252340130::1788077405::1788077405::1:::
 README.md::TextFile::-1::1788077404::0::1::::<><><>0<>0<><>::
 ::res://addons/::1788077404
 ::res://addons/fps-hands/::1788077405
-fps-hands.gd::GDScript::2440077232266059974::1788080351::0::1::::<>Node3D<>res://addons/fps-hands/icon.svg<>0<>0<><>::
+fps-hands.gd::GDScript::2440077232266059974::1788081063::0::1::::<>Node3D<>res://addons/fps-hands/icon.svg<>0<>0<><>::
 icon.svg::CompressedTexture2D::1155927465494342454::1788077405::1788077404::1::::<><><>0<>0<>a40c659f14da6acc0d4e04300c24c8a3<>res://.godot/imported/icon.svg-cc8b624e90334fc37871dff44747d261.ctex::
 plugin.cfg::TextFile::-1::1788077405::0::1::::<><><>0<>0<><>::
 plugin.gd::GDScript::6022587434727670394::1788077405::0::1::::<>EditorPlugin<><>0<>1<><>::
@@ -183,10 +183,10 @@ side.png::CompressedTexture2D::5296593076303618512::1788077405::1788077405::1:::
 MuzzleSmoke.tscn::PackedScene::6641180840963499364::1788077405::0::1::::<><><>0<>0<><>::uid://cle1oc4vd68cb::::res://addons/fps-hands/muzzlesmoke/smoke.png<>uid://bkcowjtj1luav::::res://addons/fps-hands/muzzlesmoke/muzzle_smoke.gd
 muzzle_smoke.gd::GDScript::3093327703451736893::1788077405::0::1::::<>GPUParticles3D<><>0<>0<><>::
 smoke.png::CompressedTexture2D::5554779952152831953::1788077405::1788077405::1::::<><><>0<>0<>3b200eaf149530fc566027d0b3750243<>res://.godot/imported/smoke.png-ae81edaafca1ee0bff9956101fde706e.s3tc.ctex::
-::res://build/::1788080362
-::res://dist/::1788080420
+::res://build/::1788080932
+::res://dist/::1788081001
 ::res://test/::1788077405
 crosshair.png::CompressedTexture2D::8860408941536530591::1788077405::1788077405::1::::<><><>0<>0<>1177f6d88808c775e5e5a07b95faefd3<>res://.godot/imported/crosshair.png-2db2c553c6a513d6b50bca91da68b5d8.ctex::
 player.gd::GDScript::1675755232916058003::1788080351::0::1::::<>CharacterBody3D<><>0<>0<><>::
-Player.tscn::PackedScene::4239502319918328844::1788077405::0::1::::<><><>0<>0<><>::uid://x40pddjyj6ot::::res://test/player.gd<>uid://ba08ylevmfg6i::::res://addons/fps-hands/fps-hands.gd<>uid://dyibv1x328xy2::::res://test/crosshair.png
+Player.tscn::PackedScene::4239502319918328844::1788081063::0::1::::<><><>0<>0<><>::uid://x40pddjyj6ot::::res://test/player.gd<>uid://ba08ylevmfg6i::::res://addons/fps-hands/fps-hands.gd<>uid://dyibv1x328xy2::::res://test/crosshair.png
 world.tscn::PackedScene::8096861489298190742::1788077405::0::1::::<><><>0<>0<><>::uid://b1nv8pjw0emue::::res://test/Player.tscn
