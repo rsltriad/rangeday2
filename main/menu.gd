@@ -5,6 +5,7 @@ extends Control
 const PORT := 7777
 static var my_name := ""
 static var is_host := false
+static var mode := "tdm" # "tdm" | "bomb"
 
 var name_edit: LineEdit
 var ip_edit: LineEdit
@@ -42,6 +43,13 @@ func _build_ui() -> void:
 	ip_edit.text = "127.0.0.1"
 	ip_edit.placeholder_text = "192.168.x.x"
 	box.add_child(ip_edit)
+	box.add_child(_label("Game mode (host picks)"))
+	var mode_pick := OptionButton.new()
+	mode_pick.add_item("Team Deathmatch  —  Yard", 0)
+	mode_pick.add_item("Bomb Defusal  —  Compound", 1)
+	mode_pick.selected = 1 if mode == "bomb" else 0
+	mode_pick.item_selected.connect(func(i): mode = "bomb" if i == 1 else "tdm")
+	box.add_child(mode_pick)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	box.add_child(row)

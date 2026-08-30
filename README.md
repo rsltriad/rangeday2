@@ -129,4 +129,7 @@ needed when `project.godot`/autoloads change or the patch gets large).
 Start the game → **HOST GAME** on one PC (it shows your LAN IP), friends type that IP and **JOIN**.
 Same Wi-Fi/LAN, port 7777 UDP open in the host's Windows Firewall. Teams auto-balance (RED / BLUE),
 first team to 30 kills wins, 4 s respawn, TAB = scoreboard, ESC = pause/leave.
-Map: yard (CC-BY, see CREDITS.md). Player bodies: Quaternius mannequin (team-coloured).
+Modes (host picks in the menu): **Team Deathmatch** on the yard, or **Bomb Defusal** on the desert
+compound — attackers plant at SITE A/B (hold E, 3 s), defenders defuse (hold E at the bomb, 5 s),
+40 s fuse, 5 s freeze time, first team to 4 rounds, sides swap after 3. Player bodies: Quaternius
+mannequin (team-coloured). Maps are CC-BY, see CREDITS.md.

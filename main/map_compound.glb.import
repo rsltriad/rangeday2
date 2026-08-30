@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://dbjpau6nr61ja"
-path="res://.godot/imported/reflex.glb-c0efc3436a6c7b2e10c44563d3911616.scn"
+uid="uid://rnyh3rii8kvi"
+path="res://.godot/imported/map_compound.glb-3595ed904b4f5dcff9c2cfba6bbef888.scn"
 
 [deps]
 
-source_file="res://addons/fps-hands/reddot/reflex.glb"
-dest_files=["res://.godot/imported/reflex.glb-c0efc3436a6c7b2e10c44563d3911616.scn"]
+source_file="res://main/map_compound.glb"
+dest_files=["res://.godot/imported/map_compound.glb-3595ed904b4f5dcff9c2cfba6bbef888.scn"]
 
 [params]
 

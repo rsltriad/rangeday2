@@ -16,6 +16,9 @@ var hp := MAX_HP
 var dead := false
 var is_auth := false
 var input_blocked := false
+var frozen := false # round freeze time (bomb mode): can look, can't move or shoot
+var carrying_bomb := false
+var _e_held := false
 # replicated by the MultiplayerSynchronizer (authority -> everyone)
 var cam_pitch := 0.0
 var anim := "Pistol_Idle"
@@ -73,7 +76,23 @@ func _apply_team_color() -> void:
 
 func set_input_blocked(v: bool) -> void:
 	input_blocked = v
-	fps_hands.process_mode = Node.PROCESS_MODE_DISABLED if (v or dead) else Node.PROCESS_MODE_INHERIT
+	_update_hands()
+
+func _update_hands() -> void:
+	if not is_auth: return
+	fps_hands.process_mode = Node.PROCESS_MODE_DISABLED if (input_blocked or dead or frozen) else Node.PROCESS_MODE_INHERIT
+
+@rpc("any_peer", "call_local", "reliable")
+func set_frozen(v: bool) -> void:
+	if multiplayer.get_remote_sender_id() != 1 and not multiplayer.is_server(): return
+	frozen = v
+	_update_hands()
+
+@rpc("any_peer", "call_local", "reliable")
+func set_bomb_carrier(v: bool) -> void:
+	if multiplayer.get_remote_sender_id() != 1 and not multiplayer.is_server(): return
+	carrying_bomb = v
+	name_label.text = pname + ("  [BOMB]" if v else "")
 
 # ---------- input / movement (authority only) ----------
 func _input(event: InputEvent) -> void:
@@ -90,6 +109,13 @@ func _process(delta: float) -> void:
 		aiming = fps_hands.ads
 		_shoot_t = maxf(_shoot_t - delta, 0.0)
 		_choose_anim()
+		var e := Input.is_physical_key_pressed(KEY_E) and not dead and not input_blocked and not frozen
+		if e != _e_held:
+			_e_held = e
+			var bomb := get_tree().current_scene.get_node_or_null("Bomb")
+			if bomb:
+				if multiplayer.is_server(): bomb.interact_from(peer_id, e)
+				else: bomb.interact.rpc_id(1, e)
 	else:
 		if anim != _last_anim:
 			_last_anim = anim
@@ -97,7 +123,7 @@ func _process(delta: float) -> void:
 		_aim_spine()
 
 func _physics_process(delta: float) -> void:
-	if dead or input_blocked:
+	if dead or input_blocked or frozen:
 		if not is_on_floor():
 			velocity.y -= gravity * delta
 		velocity.x = move_toward(velocity.x, 0, SPEED)
@@ -134,7 +160,10 @@ func _aim_spine() -> void:
 func _on_fps_hands_give_damage(obj: Node3D, damage: float, point: Vector3) -> void:
 	super(obj, damage, point)
 	if obj != self and obj.has_method("net_hit"):
-		obj.net_hit.rpc_id(1, damage, peer_id)
+		if multiplayer.is_server():
+			obj.net_hit(damage, peer_id)
+		else:
+			obj.net_hit.rpc_id(1, damage, peer_id)
 
 @rpc("any_peer", "reliable")
 func net_hit(damage: float, attacker: int) -> void:
@@ -145,7 +174,8 @@ func net_hit(damage: float, attacker: int) -> void:
 	if hp <= 0.0:
 		set_state.rpc(hp, true, attacker)
 		game.report_kill(peer_id, attacker)
-		get_tree().create_timer(game.RESPAWN_TIME).timeout.connect(_server_respawn)
+		if game.mode == "tdm":
+			get_tree().create_timer(game.RESPAWN_TIME).timeout.connect(_server_respawn)
 	else:
 		set_state.rpc(hp, false, attacker)
 
@@ -164,7 +194,7 @@ func set_state(new_hp: float, is_dead: bool, attacker: int) -> void:
 		collision_layer = 0
 		if is_auth:
 			anim = "Death01"
-			fps_hands.process_mode = Node.PROCESS_MODE_DISABLED
+			_update_hands()
 			fps_hands.visible = false
 			$UI/CenterContainer/Crosshair.visible = false
 			local_died.emit(attacker)
@@ -182,7 +212,7 @@ func force_respawn(pos: Vector3) -> void:
 	position = pos
 	if is_auth:
 		anim = "Pistol_Idle"
-		fps_hands.process_mode = Node.PROCESS_MODE_INHERIT if not input_blocked else Node.PROCESS_MODE_DISABLED
+		_update_hands()
 		fps_hands.visible = true
 		if fps_hands.ads:
 			fps_hands.aim(false)

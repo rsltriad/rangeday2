@@ -1,7 +1,6 @@
 [gd_scene load_steps=19 format=3 uid="uid://cawglfm7n1ptb"]
 
 [ext_resource type="PackedScene" uid="uid://1cj33dy73nwh" path="res://addons/fps-hands/fps-lmg63/resources/lmg_animated.glb" id="1_y28a5"]
-[ext_resource type="PackedScene" path="res://addons/fps-hands/reddot/RedDot.tscn" id="rd_sight"]
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_xowft"]
 animation = &"fire"
@@ -82,7 +81,7 @@ graph_offset = Vector2(-179.675, -35.4964)
 
 [node name="fps-lmg63" instance=ExtResource("1_y28a5")]
 transform = Transform3D(0.015, 0, 0, 0, 0.015, 0, 0, 0, 0.015, -0.1, -0.4, 0.2)
-metadata/ads_pos = Vector3(0, -0.354, 0.1)
+metadata/ads_pos = Vector3(0, -0.354, 0.15)
 metadata/max_magazine = 100
 metadata/auto = true
 metadata/delta = 0.3
@@ -252,7 +251,3 @@ tree_root = SubResource("AnimationNodeStateMachine_etn87")
 anim_player = NodePath("../AnimationPlayer")
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." index="3"]
-
-[node name="RedDot" parent="Sketchfab_model/69e2934791944e82b551d459b4c5e069_fbx/Object_2/RootNode/Object_4/LMG/base" instance=ExtResource("rd_sight")]
-transform = Transform3D(-110, 0, 0, 0, 110, 0, 0, 0, -110, 0, 15.8, 4)
-riser_height = 0.035

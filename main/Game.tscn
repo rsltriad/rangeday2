@@ -1,7 +1,7 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://main/game.gd" id="1_game"]
-[ext_resource type="PackedScene" path="res://main/map_yard.glb" id="2_map"]
+[ext_resource type="Script" path="res://main/bomb_mode.gd" id="2_bomb"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -27,6 +27,7 @@ transform = Transform3D(0.715256, -0.512636, 0.474987, 7.45058e-09, 0.679657, 0.
 light_energy = 0.9
 shadow_enabled = true
 
-[node name="Map" parent="." instance=ExtResource("2_map")]
+[node name="Bomb" type="Node" parent="."]
+script = ExtResource("2_bomb")
 
 [node name="Players" type="Node3D" parent="."]

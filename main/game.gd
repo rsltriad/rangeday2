@@ -8,11 +8,16 @@ const TEAM_COLORS := [Color(0.9, 0.25, 0.2), Color(0.25, 0.5, 1.0)]
 const NetPlayerScene := preload("res://main/NetPlayer.tscn")
 const MenuScript := preload("res://main/menu.gd")
 # Two ends of the yard (map is 50 x 100 m, long axis = Z).
+const SPAWNS_BOMB := [ # [attackers, defenders] on the compound (walls at ±50)
+	[Vector3(-12, 1, 38), Vector3(-6, 1, 38), Vector3(0, 1, 38), Vector3(6, 1, 38), Vector3(12, 1, 38)],
+	[Vector3(-12, 1, -38), Vector3(-6, 1, -38), Vector3(0, 1, -38), Vector3(6, 1, -38), Vector3(12, 1, -38)],
+]
 const SPAWNS := [
 	[Vector3(-12, 1.5, 40), Vector3(-6, 1.5, 40), Vector3(0, 1.5, 40), Vector3(6, 1.5, 40), Vector3(12, 1.5, 40)],
 	[Vector3(-12, 1.5, -40), Vector3(-6, 1.5, -40), Vector3(0, 1.5, -40), Vector3(6, 1.5, -40), Vector3(12, 1.5, -40)],
 ]
 
+var mode := "tdm"
 var players := {} # peer_id -> {name, team, kills, deaths}
 var scores := [0, 0]
 var match_over := false
@@ -29,7 +34,6 @@ var pause_panel: PanelContainer
 var paused := false
 
 func _ready() -> void:
-	_build_map_collision()
 	_build_hud()
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
@@ -37,17 +41,54 @@ func _ready() -> void:
 	print("[game] ready as peer ", multiplayer.get_unique_id(), " server=", multiplayer.is_server(), " peers=", multiplayer.get_peers())
 	if multiplayer.is_server():
 		multiplayer.peer_connected.connect(func(id): print("[game] peer connected ", id))
+		setup(MenuScript.mode)
 		_register(1, MenuScript.my_name)
 	else:
 		register.rpc_id(1, MenuScript.my_name)
 
-# ---------- map ----------
-func _build_map_collision() -> void:
-	for mi in $Map.find_children("*", "MeshInstance3D", true, false):
+# ---------- map / mode ----------
+@rpc("authority", "reliable")
+func setup(m: String) -> void:
+	if has_node("Map"): return
+	mode = m
+	var map: Node3D
+	if mode == "bomb":
+		map = load("res://main/map_compound.glb").instantiate()
+		map.scale = Vector3(0.5, 0.5, 0.5)
+	else:
+		map = load("res://main/map_yard.glb").instantiate()
+	map.name = "Map"
+	add_child(map)
+	_prepare_map(map)
+	if mode == "bomb":
+		# The compound's ground quad has no usable collision: add an explicit floor at y=0.
+		var floor_body := StaticBody3D.new()
+		var cs := CollisionShape3D.new()
+		cs.shape = WorldBoundaryShape3D.new()
+		floor_body.add_child(cs)
+		add_child(floor_body)
+		$Bomb.setup(self)
+
+## Collision + material fix for Poly Pizza maps: they ship every surface as metallic 0.4 /
+## roughness 0.27, which reflects the whole sky and washes the map out white.
+func _prepare_map(map: Node) -> void:
+	var fixed := {}
+	for mi in map.find_children("*", "MeshInstance3D", true, false):
 		mi.create_trimesh_collision()
+		for i in mi.mesh.get_surface_count():
+			var mat: Material = mi.mesh.surface_get_material(i)
+			if mat is BaseMaterial3D and not fixed.has(mat):
+				fixed[mat] = true
+				mat.metallic = 0.0
+				mat.roughness = 0.95
+				mat.specular = 0.2
 
 func pick_spawn(team: int) -> Vector3:
-	var list: Array = SPAWNS[clampi(team, 0, 1)]
+	var list: Array
+	if mode == "bomb":
+		list = SPAWNS_BOMB[0 if $Bomb.is_attacker(team) else 1]
+	else:
+		list = SPAWNS[clampi(team, 0, 1)]
 	return list[randi() % list.size()]
 
 # ---------- players / teams (server) ----------
@@ -70,6 +111,7 @@ func _register(id: int, pname: String) -> void:
 	feed.rpc("%s joined %s" % [pname, TEAM_NAMES[team]])
 	# Late joiner learns about everyone already in the match.
 	if id != 1:
+		setup.rpc_id(id, mode)
 		for p in players_root.get_children():
 			spawn_player.rpc_id(id, p.peer_id, p.team, p.position, p.pname)
 	spawn_player.rpc(id, team, pick_spawn(team), pname)
@@ -88,6 +130,9 @@ func same_team(a: int, b: int) -> bool:
 func report_kill(victim: int, killer: int) -> void: # server
 	if not players.has(victim): return
 	players[victim].deaths += 1
+	if mode == "bomb":
+		var vp := players_root.get_node_or_null(str(victim))
+		if vp: $Bomb.on_player_died(vp)
 	var vname: String = players[victim].name
 	if killer != victim and players.has(killer):
 		players[killer].kills += 1
@@ -96,7 +141,7 @@ func report_kill(victim: int, killer: int) -> void: # server
 	else:
 		feed.rpc("%s died" % vname)
 	sync_state.rpc(players, scores, match_over)
-	if not match_over:
+	if not match_over and mode == "tdm":
 		for t in 2:
 			if scores[t] >= KILLS_TO_WIN:
 				match_over = true
@@ -225,8 +270,8 @@ func _build_hud() -> void:
 	_refresh_hud()
 
 func _refresh_hud() -> void:
-	score_label.text = "[color=#e64d40]RED %d[/color]   %d BLUE" % [scores[0], scores[1]]
-	score_label.text = "RED %d   -   %d BLUE" % [scores[0], scores[1]]
+	if mode != "bomb":
+		score_label.text = "RED %d   -   %d BLUE" % [scores[0], scores[1]]
 	var txt := ""
 	for t in 2:
 		txt += "[color=#%s][b]%s  %d[/b][/color]\n" % [TEAM_COLORS[t].to_html(false), TEAM_NAMES[t], scores[t]]

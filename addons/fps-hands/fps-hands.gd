@@ -32,7 +32,7 @@ signal taking_weapon()
 ## Viewmodel (gun + sight) FOV used by the weapon shaders at the hip / when aiming.
 ## Lower ADS value = the sight fills more of the screen.
 @export var viewmodel_fov : float = 70.0
-@export var ads_viewmodel_fov : float = 42.0
+@export var ads_viewmodel_fov : float = 70.0
 @export var recoil : bool = true
 @export_subgroup("Recoil configs")
 ## What to rotate on X axis with recoil (most of the time the camera)
@@ -439,7 +439,12 @@ func _process(delta) -> void:
 		# idle + ADS. _travel() re-activates it for fire/reload/melee/switch.
 		if animation and !breath_while_ads:
 			if ads and state_machine.get_current_node() == "idle" and not Input.is_action_pressed(action_fire):
-				animation.process_mode = Node.PROCESS_MODE_DISABLED
+				if animation.process_mode != Node.PROCESS_MODE_DISABLED:
+					# Snap the idle loop to its neutral first frame, then pause it: the gun is
+					# dead still and always in the same pose while aiming.
+					state_machine.start("idle", true)
+					animation.advance(0.0)
+					animation.process_mode = Node.PROCESS_MODE_DISABLED
 			else:
 				animation.process_mode = Node.PROCESS_MODE_INHERIT
 		# Sight alignment: while aiming and the gun is still (idle, animation paused),
