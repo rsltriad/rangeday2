@@ -126,6 +126,11 @@ func _ready() -> void:
 	take_weapon(0)
 
 
+func _travel(state:String) -> void:
+	if animation:
+		animation.active = true
+	state_machine.travel(state)
+
 func update_inventory():
 	inventory["weapons"][weapon_index][1] = magazine
 	update_ammo.emit(magazine, inventory["ammo"][weapon.get_meta("ammo_type", "none")], weapon.get_meta("ammo_type", "none"))
@@ -136,21 +141,17 @@ func aim(toggle:bool=true) -> void:
 	
 	if !ads and toggle:
 		ads = true
-		if !breath_while_ads:
-			animation.tree_root.get_node("idle").timeline_length = 0
 	elif ads:
 		ads = false
-		if !breath_while_ads:
-			animation.tree_root.get_node("idle").timeline_length = idle_anim_speed
 	
 	aiming.emit(ads)
 
 func reload() -> void:
 	if inventory["ammo"][weapon.get_meta("ammo_type", "none")] > 0:
 		if magazine > 0 and "reload_full" in animation.get_animation_list():
-			state_machine.travel("reload_full")
+			_travel("reload_full")
 		else:
-			state_machine.travel("reload")
+			_travel("reload")
 
 func add_decal(pos:Vector3, normal:Vector3, decal:PackedScene, father:Node3D) -> void:
 	var bullethole : Decal = decal.instantiate()
@@ -338,7 +339,7 @@ func take_weapon(inventory_index:int) -> void:
 	# If there is already a weapon, hide it then change it
 	else:
 		weapon_change = inventory_index
-		state_machine.travel("hide")
+		_travel("hide")
 		return
 	
 	weapon_index = inventory_index
@@ -374,13 +375,13 @@ func _input(_event) -> void:
 		# Single fire
 		if !weapon.get_meta("auto", false):
 			if Input.is_action_just_pressed(action_fire) and (magazine > 0 or max_magazine == 0):
-				state_machine.travel("fire")
+				_travel("fire")
 			elif auto_reload and Input.is_action_just_pressed(action_fire) and magazine == 0 and max_magazine > 0:
 				reload()
 		
 		# Actions
 		if Input.is_action_just_pressed(action_melee):
-			state_machine.travel("melee")
+			_travel("melee")
 		if Input.is_action_just_pressed(action_reload) and magazine != max_magazine:
 			reload()
 		if Input.is_action_just_pressed(action_ads):
@@ -405,6 +406,13 @@ func _process(delta) -> void:
 			rotation.z = _lag_clamp(lerp_angle(rotation.z, sway_rotation_target.z, sway_k), sway_rotation_target.z)
 		position = camera.global_position
 	if weapon != null:
+		# Hard-disable breathing while aiming: pause the whole animation tree when
+		# idle + ADS. _travel() re-activates it for fire/reload/melee/switch.
+		if animation and !breath_while_ads:
+			if ads and state_machine.get_current_node() == "idle" and not Input.is_action_pressed(action_fire):
+				animation.active = false
+			else:
+				animation.active = true
 		# ADS animation
 		if ads and weapon.position != ads_pos:
 			weapon.position = weapon.position.move_toward(ads_pos, weapon.get_meta("delta",1.5)*delta_multiplier*delta)
@@ -418,7 +426,7 @@ func _process(delta) -> void:
 		# Automatic fire
 		if weapon.get_meta("auto", false):
 			if Input.is_action_pressed(action_fire) and (magazine > 0 or max_magazine == 0):
-				state_machine.travel("fire")
+				_travel("fire")
 			elif auto_reload and Input.is_action_pressed(action_fire) and magazine == 0 and max_magazine > 0:
 				reload()
 
