@@ -113,3 +113,13 @@ A shader can be used instead, like [this one](https://godotshaders.com/shader/sc
 - Muzzle flash texture by [Julius](https://opengameart.org/users/julius) under [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
 - Muzzle smoke texture by [Kenney](https://www.kenney.nl/) under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
 - Icon by [game-icons.net](https://game-icons.net/) under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+
+## Updates (Range Day 2)
+
+The game is `RangeDay2.exe` + `RangeDay2.pck` (one-time download, split parts in `dist/`).
+Each later version ships only `patches/update.pck` — the files that changed since the base.
+Drop it next to the exe (any `update*.pck`, loaded alphabetically at startup by `patcher.gd`)
+and the game uses the new files. Delete it to go back to the base.
+
+Maintainers: `tools/make-patch.sh` (incremental), `tools/make-base.sh` (new full base;
+needed when `project.godot`/autoloads change or the patch gets large).

@@ -21,6 +21,7 @@ func _flat(color: Color, rough := 0.6, metal := 0.3) -> ShaderMaterial:
 	m.set_shader_parameter("albedo", color)
 	m.set_shader_parameter("roughness", rough)
 	m.set_shader_parameter("metallic", metal)
+	m.set_shader_parameter("fov", 70.0)
 	return m
 
 func _ready() -> void:
@@ -34,9 +35,13 @@ func _ready() -> void:
 				var g := ShaderMaterial.new()
 				g.shader = GLASS_SHADER
 				g.render_priority = 1
+				g.set_shader_parameter("fov", 70.0)
 				mi.set_surface_override_material(i, g)
 			else:
 				mi.set_surface_override_material(i, _flat(col))
+	var ret: MeshInstance3D = $Lift/Reticle
+	if ret.mesh and ret.mesh.material is ShaderMaterial:
+		ret.mesh.material.set_shader_parameter("fov", 70.0)
 	_update_riser()
 
 func _update_riser() -> void:

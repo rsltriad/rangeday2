@@ -8,6 +8,10 @@
 
 config_version=5
 
+[autoload]
+
+Patcher="*res://patcher.gd"
+
 [application]
 
 config/name="fps-hands"

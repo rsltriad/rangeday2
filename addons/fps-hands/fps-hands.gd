@@ -29,6 +29,10 @@ signal taking_weapon()
 @export_group("Camera")
 @export var camera : Camera3D
 @export var ads_dynamic_fov : bool = true
+## Viewmodel (gun + sight) FOV used by the weapon shaders at the hip / when aiming.
+## Lower ADS value = the sight fills more of the screen.
+@export var viewmodel_fov : float = 70.0
+@export var ads_viewmodel_fov : float = 42.0
 @export var recoil : bool = true
 @export_subgroup("Recoil configs")
 ## What to rotate on X axis with recoil (most of the time the camera)
@@ -93,6 +97,8 @@ var start_pos : Vector3
 var ads_pos : Vector3
 var ads_target : Vector3 # ads_pos corrected so the sight's AimPoint sits on the camera axis
 var aim_point : Node3D = null
+var vm_materials : Array[ShaderMaterial] = []
+var vm_fov : float = 70.0
 var ads : bool = false
 var start_fov : float
 
@@ -128,9 +134,14 @@ func _ready() -> void:
 	take_weapon(0)
 
 
+func _set_vm_fov(v:float) -> void:
+	vm_fov = v
+	for m in vm_materials:
+		m.set_shader_parameter("fov", v)
+
 func _travel(state:String) -> void:
 	if animation:
-		animation.active = true
+		animation.process_mode = Node.PROCESS_MODE_INHERIT
 	state_machine.travel(state)
 
 func update_inventory():
@@ -355,6 +366,16 @@ func take_weapon(inventory_index:int) -> void:
 	ads_pos = weapon.get_meta("ads_pos", start_pos)
 	ads_target = ads_pos
 	aim_point = weapon.find_child("AimPoint", true, false)
+	vm_materials.clear()
+	for mi in weapon.find_children("*", "MeshInstance3D", true, false):
+		if mi.material_override is ShaderMaterial and mi.material_override.get_shader_parameter("fov") != null:
+			vm_materials.append(mi.material_override)
+		if mi.mesh:
+			for i in mi.mesh.get_surface_count():
+				var m = mi.get_active_material(i)
+				if m is ShaderMaterial and m.get_shader_parameter("fov") != null and not vm_materials.has(m):
+					vm_materials.append(m)
+	_set_vm_fov(vm_fov)
 	
 	max_magazine = weapon.get_meta("max_magazine",0)
 	magazine = inventory_weapon[1]
@@ -414,19 +435,23 @@ func _process(delta) -> void:
 		# idle + ADS. _travel() re-activates it for fire/reload/melee/switch.
 		if animation and !breath_while_ads:
 			if ads and state_machine.get_current_node() == "idle" and not Input.is_action_pressed(action_fire):
-				animation.active = false
+				animation.process_mode = Node.PROCESS_MODE_DISABLED
 			else:
-				animation.active = true
+				animation.process_mode = Node.PROCESS_MODE_INHERIT
 		# Sight alignment: while aiming and the gun is still (idle, animation paused),
 		# measure where the sight's AimPoint sits relative to the camera axis and shift
 		# the ADS target so it lands exactly on it (dot == crosshair == bullet path).
-		if ads and is_instance_valid(aim_point) and camera and animation and not animation.active:
+		if ads and is_instance_valid(aim_point) and camera and animation and animation.process_mode == Node.PROCESS_MODE_DISABLED:
 			var cl := camera.to_local(aim_point.global_position)
 			var err_world := camera.global_transform.basis * Vector3(cl.x, cl.y, 0.0)
 			var err_local := global_transform.basis.inverse() * err_world
 			ads_target = Vector3(weapon.position.x - err_local.x, weapon.position.y - err_local.y, ads_pos.z)
 		elif not ads:
 			ads_target = ads_pos
+		# Viewmodel zoom (gun shader FOV) follows the ADS state
+		var want_fov := ads_viewmodel_fov if ads else viewmodel_fov
+		if absf(vm_fov - want_fov) > 0.01:
+			_set_vm_fov(lerpf(vm_fov, want_fov, minf(weapon.get_meta("delta",1.5)*delta_multiplier*delta*4.0, 1.0)))
 		# ADS animation
 		if ads and weapon.position != ads_target:
 			weapon.position = weapon.position.move_toward(ads_target, weapon.get_meta("delta",1.5)*delta_multiplier*delta)
