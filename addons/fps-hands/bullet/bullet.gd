@@ -9,16 +9,20 @@ var collision_mask : int = 1
 var direction := Vector3(0, 0, -speed)
 var gravity := ProjectSettings.get_setting("physics/3d/default_gravity_vector")
 var collided := false
+var shooter : Node3D = null # body that fired us; never hit it
 
 @onready var origin := global_position
 @onready var raycast : RayCast3D = $RayCast3D
 
 func _ready() -> void:
 	raycast.collision_mask = collision_mask
+	if shooter:
+		raycast.add_exception(shooter)
 	$Area3D.collision_mask = collision_mask
 
 func collide(collider:Node3D) -> void:
 	if collided: return
+	if collider == shooter: return
 	collided = true
 	#process_mode = Node.PROCESS_MODE_DISABLED
 	damage -= damage/distance*global_position.distance_to(origin)

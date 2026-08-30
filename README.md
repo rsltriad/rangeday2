@@ -123,3 +123,10 @@ and the game uses the new files. Delete it to go back to the base.
 
 Maintainers: `tools/make-patch.sh` (incremental), `tools/make-base.sh` (new full base;
 needed when `project.godot`/autoloads change or the patch gets large).
+
+## LAN team deathmatch (Range Day 2)
+
+Start the game → **HOST GAME** on one PC (it shows your LAN IP), friends type that IP and **JOIN**.
+Same Wi-Fi/LAN, port 7777 UDP open in the host's Windows Firewall. Teams auto-balance (RED / BLUE),
+first team to 30 kills wins, 4 s respawn, TAB = scoreboard, ESC = pause/leave.
+Map: yard (CC-BY, see CREDITS.md). Player bodies: Quaternius mannequin (team-coloured).

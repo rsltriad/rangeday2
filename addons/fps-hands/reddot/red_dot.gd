@@ -1,6 +1,6 @@
 @tool
 extends Node3D
-## Tube red dot sight (model: "Red Dot Sight" by Pichuliru, Poly Pizza, CC0).
+## Open reflex sight (model: "Reflex Sight" by Pichuliru, Poly Pizza, CC0).
 ## Child "AimPoint" marks the optical centre; fps-hands.gd aligns it to the camera axis in ADS.
 
 @export var riser_height: float = 0.0:
@@ -31,11 +31,12 @@ func _ready() -> void:
 		for i in mi.mesh.get_surface_count():
 			var src: Material = mi.mesh.surface_get_material(i)
 			var col: Color = src.albedo_color if src is BaseMaterial3D else Color(0.1, 0.1, 0.1)
-			if i == 2:
+			if i == 2 or i == 3:
 				var g := ShaderMaterial.new()
 				g.shader = GLASS_SHADER
 				g.render_priority = 1
 				g.set_shader_parameter("fov", 70.0)
+				g.set_shader_parameter("albedo", Color(0.9, 0.35, 0.3, 0.12) if i == 3 else Color(0.6, 0.75, 0.9, 0.1))
 				mi.set_surface_override_material(i, g)
 			else:
 				mi.set_surface_override_material(i, _flat(col))
@@ -58,6 +59,6 @@ func _update_riser() -> void:
 		return
 	_riser.visible = true
 	var box := BoxMesh.new()
-	box.size = Vector3(0.022, riser_height, 0.05)
+	box.size = Vector3(0.03, riser_height, 0.032)
 	_riser.mesh = box
-	_riser.position = Vector3(0, riser_height * 0.5, 0.004)
+	_riser.position = Vector3(0, riser_height * 0.5, 0.008)

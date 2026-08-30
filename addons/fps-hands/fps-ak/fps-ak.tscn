@@ -222,4 +222,4 @@ anim_player = NodePath("../AnimationPlayer")
 [connection signal="animation_started" from="AnimationTree" to="." method="_on_animation_tree_animation_started"]
 
 [node name="RedDot" parent="Sketchfab_model/a5167d948e6a4ec8bd09a04312151f71_fbx/Object_2/RootNode/Object_4/ak/base" instance=ExtResource("rd_sight")]
-transform = Transform3D(-100, 0, 0, 0, 100, 0, 0, 0, -100, 0, 13.2, 6)
+transform = Transform3D(-110, 0, 0, 0, 110, 0, 0, 0, -110, 0, 15.5, 24)

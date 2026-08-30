@@ -4,7 +4,7 @@ shader_type spatial;
 render_mode blend_add, unshaded, cull_disabled, depth_draw_never, shadows_disabled;
 
 uniform vec4 dot_color : source_color = vec4(1.0, 0.12, 0.08, 1.0);
-uniform float aperture_radius = 0.0086; // local units (metres at scale 1)
+uniform vec2 aperture_half = vec2(0.0138, 0.0098); // window half size, local units (metres at scale 1)
 uniform float dot_radius = 0.0011;
 uniform float intensity = 2.2;
 uniform float fov = 70.0; // must match the weapon viewmodel shader
@@ -35,7 +35,8 @@ void fragment() {
 		float r = length(local_pos.xy - hit);
 		float core = 1.0 - smoothstep(dot_radius * 0.55, dot_radius, r);
 		float glow = exp(-(r * r) / (dot_radius * dot_radius * 6.0)) * 0.35;
-		float in_glass = 1.0 - smoothstep(aperture_radius * 0.92, aperture_radius, length(local_pos.xy));
+		vec2 q = abs(local_pos.xy) / aperture_half;
+		float in_glass = 1.0 - smoothstep(0.9, 1.0, max(q.x, q.y));
 		a = (core + glow) * in_glass * (t > 0.0 ? 1.0 : 0.0);
 	}
 	ALBEDO = dot_color.rgb * a * intensity;

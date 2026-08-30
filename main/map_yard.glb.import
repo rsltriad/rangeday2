@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://bhhj41o811sra"
-path="res://.godot/imported/reddot.glb-51aa7af9f8eb48aad689a6e030b4f005.scn"
+uid="uid://b4r7rh63lu2xp"
+path="res://.godot/imported/map_yard.glb-ecffd147e61d68e52acba35e6b0912b4.scn"
 
 [deps]
 
-source_file="res://addons/fps-hands/reddot/reddot.glb"
-dest_files=["res://.godot/imported/reddot.glb-51aa7af9f8eb48aad689a6e030b4f005.scn"]
+source_file="res://main/map_yard.glb"
+dest_files=["res://.godot/imported/map_yard.glb-ecffd147e61d68e52acba35e6b0912b4.scn"]
 
 [params]
 

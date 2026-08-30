@@ -76,7 +76,7 @@ graph_offset = Vector2(-179.461, -48.1737)
 
 [node name="fps-c19" instance=ExtResource("1_uliin")]
 transform = Transform3D(0.015, 0, 0, 0, 0.015, 0, 0, 0, 0.015, -0.1, -0.4, 0.3)
-metadata/ads_pos = Vector3(0, -0.258, 0.2)
+metadata/ads_pos = Vector3(0, -0.258, 0.1)
 metadata/max_magazine = 19
 metadata/auto = false
 metadata/delta = 2.0
@@ -207,4 +207,4 @@ anim_player = NodePath("../AnimationPlayer")
 [connection signal="animation_finished" from="AnimationTree" to="." method="_on_animation_tree_animation_finished"]
 
 [node name="RedDot" parent="Sketchfab_model/b34e1f0b138c4750adf4ba8296639418_fbx/Object_2/RootNode/Object_4/BPpistol/base" instance=ExtResource("rd_sight")]
-transform = Transform3D(-80, 0, 0, 0, 80, 0, 0, 0, -80, 0, 8.0, 4)
+transform = Transform3D(-110, 0, 0, 0, 110, 0, 0, 0, -110, 0, 8.9, 4)

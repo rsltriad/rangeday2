@@ -200,6 +200,10 @@ func fire_bullet(look_at_dir:Vector3, damage:float) -> void:
 		bullet_instance.damage = damage
 		bullet_instance.distance = weapon.get_meta("range")
 		bullet_instance.collision_mask = collision_mask
+		var body := get_parent()
+		while body and not (body is PhysicsBody3D):
+			body = body.get_parent()
+		bullet_instance.shooter = body
 		bullet_instance.connect("collision", _on_bullet_collision)
 		
 		bullet_instance.look_at_from_position(muzzlePoint.global_position, look_at_dir, Vector3.UP)
