@@ -105,6 +105,8 @@ func _process(delta: float) -> void:
 	if is_auth:
 		if not dead and not input_blocked:
 			super(delta)
+		else:
+			_apply_fov()
 		cam_pitch = camera.rotation.x
 		aiming = fps_hands.ads
 		_shoot_t = maxf(_shoot_t - delta, 0.0)

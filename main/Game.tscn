@@ -24,7 +24,6 @@ environment = SubResource("env")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.715256, -0.512636, 0.474987, 7.45058e-09, 0.679657, 0.73353, -0.698862, -0.524662, 0.486129, 0, 20, 0)
-light_energy = 0.9
 shadow_enabled = true
 
 [node name="Bomb" type="Node" parent="."]

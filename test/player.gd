@@ -34,6 +34,7 @@ extends CharacterBody3D
 
 # Get the gravity from the project settings to be synced with RigidDynamicBody nodes.
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
+const GameSettings = preload("res://main/settings.gd")
 
 @onready var camera : Camera3D = get_node("Camera3D")
 var camera_start_position : Vector3
@@ -45,10 +46,13 @@ func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	camera_start_position = camera.position
+	GameSettings.load_cfg()
+	MOUSE_SENSITIVITY = GameSettings.sensitivity
 
 func _input(event):
 	# Controls player camera with mouse.
 	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+		MOUSE_SENSITIVITY = GameSettings.sensitivity
 		camera.rotation.x = camera.rotation.x + clampf(
 			deg_to_rad(event.relative.y * MOUSE_SENSITIVITY * -1),
 			clamp_min,
@@ -64,7 +68,16 @@ func _input(event):
 			else:
 				Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
+func _apply_fov():
+	# Live-apply the FOV setting when not aiming (fps-hands drives fov during ADS)
+	var fh = get_node_or_null("Camera3D/FpsHands")
+	if fh == null: return
+	fh.start_fov = GameSettings.fov
+	if not fh.ads and (fh.weapon == null or fh.weapon.position.is_equal_approx(fh.start_pos)):
+		camera.fov = lerpf(camera.fov, GameSettings.fov, 0.2)
+
 func _process(delta):
+	_apply_fov()
 	# Controls player camera with gamepad
 	var look_vector = Input.get_vector(look_right_action,look_left_action,look_down_action,look_up_action)
 	#var look_vector = Vector2.ZERO

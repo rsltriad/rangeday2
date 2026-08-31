@@ -3,6 +3,7 @@ extends Control
 ## LAN lobby: host or join by IP. Connection state lives here; match state lives in Game.
 
 const PORT := 7777
+const GameSettings = preload("res://main/settings.gd")
 static var my_name := ""
 static var is_host := false
 static var mode := "tdm" # "tdm" | "bomb"
@@ -11,7 +12,10 @@ var name_edit: LineEdit
 var ip_edit: LineEdit
 var status: Label
 
+var settings_panel: PanelContainer = null
+
 func _ready() -> void:
+	GameSettings.load_cfg()
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	_build_ui()
@@ -63,6 +67,10 @@ func _build_ui() -> void:
 	join_btn.custom_minimum_size = Vector2(200, 44)
 	join_btn.pressed.connect(_on_join)
 	row.add_child(join_btn)
+	var settings_btn := Button.new()
+	settings_btn.text = "Settings"
+	settings_btn.pressed.connect(_toggle_settings)
+	box.add_child(settings_btn)
 	var practice := Button.new()
 	practice.text = "Practice range (offline)"
 	practice.pressed.connect(func(): get_tree().change_scene_to_file("res://test/range.tscn"))
@@ -76,6 +84,16 @@ func _build_ui() -> void:
 	status = Label.new()
 	status.modulate = Color(1, 0.85, 0.4)
 	box.add_child(status)
+
+func _toggle_settings() -> void:
+	if settings_panel and is_instance_valid(settings_panel):
+		settings_panel.queue_free()
+		settings_panel = null
+		return
+	settings_panel = GameSettings.make_panel()
+	settings_panel.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	settings_panel.position = Vector2(-460, -180)
+	add_child(settings_panel)
 
 func _label(t: String) -> Label:
 	var l := Label.new()

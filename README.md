@@ -133,3 +133,5 @@ Modes (host picks in the menu): **Team Deathmatch** on the yard, or **Bomb Defus
 compound — attackers plant at SITE A/B (hold E, 3 s), defenders defuse (hold E at the bomb, 5 s),
 40 s fuse, 5 s freeze time, first team to 4 rounds, sides swap after 3. Player bodies: Quaternius
 mannequin (team-coloured). Maps are CC-BY, see CREDITS.md.
+Settings (fullscreen, mouse sensitivity, FOV, volume) live in the main menu and the ESC menu,
+saved to `user://settings.cfg`.

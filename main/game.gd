@@ -31,7 +31,9 @@ var center_label: Label
 var board: PanelContainer
 var board_text: RichTextLabel
 var pause_panel: PanelContainer
+var settings_panel: PanelContainer = null
 var paused := false
+const GameSettings := preload("res://main/settings.gd")
 
 func _ready() -> void:
 	_build_hud()
@@ -80,8 +82,10 @@ func _prepare_map(map: Node) -> void:
 			if mat is BaseMaterial3D and not fixed.has(mat):
 				fixed[mat] = true
 				mat.metallic = 0.0
-				mat.roughness = 0.95
-				mat.specular = 0.2
+				mat.roughness = 1.0
+				mat.specular = 0.15
+				var c: Color = mat.albedo_color
+				mat.albedo_color = Color.from_hsv(c.h, minf(c.s, 0.62), minf(c.v, 0.74), c.a)
 
 func pick_spawn(team: int) -> Vector3:
 	var list: Array
@@ -257,6 +261,10 @@ func _build_hud() -> void:
 	resume.text = "Resume"
 	resume.pressed.connect(_set_paused.bind(false))
 	v.add_child(resume)
+	var sbtn := Button.new()
+	sbtn.text = "Settings"
+	sbtn.pressed.connect(_toggle_settings)
+	v.add_child(sbtn)
 	var leave := Button.new()
 	leave.text = "Leave match"
 	leave.pressed.connect(_leave)
@@ -296,9 +304,22 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
 		_set_paused(not paused)
 
+func _toggle_settings() -> void:
+	if settings_panel and is_instance_valid(settings_panel):
+		settings_panel.queue_free()
+		settings_panel = null
+		return
+	settings_panel = GameSettings.make_panel()
+	settings_panel.set_anchors_preset(Control.PRESET_CENTER)
+	settings_panel.position = Vector2(180, -180)
+	hud.add_child(settings_panel)
+
 func _set_paused(v: bool) -> void:
 	paused = v
 	pause_panel.visible = v
+	if not v and settings_panel and is_instance_valid(settings_panel):
+		settings_panel.queue_free()
+		settings_panel = null
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE if v else Input.MOUSE_MODE_CAPTURED)
 	var me := players_root.get_node_or_null(str(multiplayer.get_unique_id()))
 	if me: me.set_input_blocked(v)

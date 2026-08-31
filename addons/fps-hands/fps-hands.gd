@@ -173,6 +173,9 @@ func add_decal(pos:Vector3, normal:Vector3, decal:PackedScene, father:Node3D) ->
 	if normal != Vector3.UP:
 		bullethole.look_at(pos + Vector3.UP, normal)
 	bullethole.rotate(normal, randf_range(0, 2*PI))
+	# Map meshes carry big import scales; a decal parented to them inherits the scale
+	# and smears into a giant patch. Keep the rotation, drop the scale.
+	bullethole.global_transform = Transform3D(bullethole.global_transform.basis.orthonormalized(), pos)
 
 func melee_attack(raycast:RayCast3D, damage:float) -> void:
 	var collider = raycast.get_collider()
