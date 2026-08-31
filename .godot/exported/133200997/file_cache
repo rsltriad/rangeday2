@@ -23,7 +23,7 @@ res://addons/fps-hands/muzzleflash/MuzzleFlash.tscn::8b404d2ef70719d85c1f4570f20
 res://addons/fps-hands/muzzlesmoke/MuzzleSmoke.tscn::885f7dc9bde5ece5972236a387f1070c::1788077405::res://.godot/exported/133200997/export-7d4573078d6e221d7029861f894005f1-MuzzleSmoke.scn
 res://test/Player.tscn::cd1cadd49688c9975d6cb203145f3366::1788091440::res://.godot/exported/133200997/export-937045e5491d0a7268ede54a12105568-Player.scn
 res://test/world.tscn::804b27476e6e36e60a06d6e4044f6862::1788096221::res://.godot/exported/133200997/export-169c9a3b26aefcf8b19860e409d13f30-world.scn
-res://main/Game.tscn::8eaf97c10847d4f2ad89123582b5dbaf::1788137492::res://.godot/exported/133200997/export-6b8b7cb0efd3eb3375cb2f243cd1eb21-Game.scn
+res://main/Game.tscn::8667bf61abb2c651e08e422cacc53ea1::1788138113::res://.godot/exported/133200997/export-6b8b7cb0efd3eb3375cb2f243cd1eb21-Game.scn
 res://main/Menu.tscn::07d18b4849dff7cb4341937c5af5608b::1788096221::res://.godot/exported/133200997/export-e53adf27fa1701b748ddd3ef590a2a79-Menu.scn
 res://main/NetPlayer.tscn::0e0e38d5cfc24a66ae098749d0664598::1788096306::res://.godot/exported/133200997/export-60d527fee85cbb21029037a37bbe5507-NetPlayer.scn
 res://test/range.tscn::ba108f1bda348f49467605fb83e1a6dc::1788096221::res://.godot/exported/133200997/export-74be8624ae2c76c1ca36ea5af93eee86-range.scn

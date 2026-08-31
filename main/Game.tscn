@@ -13,6 +13,8 @@ sky_material = SubResource("sky")
 [sub_resource type="Environment" id="env"]
 background_mode = 2
 sky = SubResource("sky_res")
+ambient_light_sky_contribution = 1.0
+ambient_light_energy = 1.35
 tonemap_mode = 2
 glow_enabled = false
 
@@ -21,10 +23,6 @@ script = ExtResource("1_game")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("env")
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.715256, -0.512636, 0.474987, 7.45058e-09, 0.679657, 0.73353, -0.698862, -0.524662, 0.486129, 0, 20, 0)
-shadow_enabled = true
 
 [node name="Bomb" type="Node" parent="."]
 script = ExtResource("2_bomb")
