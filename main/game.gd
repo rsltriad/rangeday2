@@ -18,6 +18,8 @@ const SPAWNS := [
 ]
 
 var mode := "tdm"
+const BOT_ID_BASE := 100000
+const BOT_NAMES := ["Bot Alpha", "Bot Bravo", "Bot Charlie", "Bot Delta", "Bot Echo", "Bot Foxtrot"]
 var players := {} # peer_id -> {name, team, kills, deaths}
 var scores := [0, 0]
 var match_over := false
@@ -45,6 +47,8 @@ func _ready() -> void:
 		multiplayer.peer_connected.connect(func(id): print("[game] peer connected ", id))
 		setup(MenuScript.mode)
 		_register(1, MenuScript.my_name)
+		for i in clampi(MenuScript.bots, 0, 6):
+			_register(BOT_ID_BASE + i, BOT_NAMES[i])
 	else:
 		register.rpc_id(1, MenuScript.my_name)
 

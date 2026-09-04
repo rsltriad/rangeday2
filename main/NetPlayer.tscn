@@ -65,7 +65,6 @@ transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.05, 0)
 pixel_size = 0.004
 billboard = 1
-no_depth_test = true
 text = "name"
 font_size = 48
 outline_size = 12

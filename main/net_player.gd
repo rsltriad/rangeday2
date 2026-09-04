@@ -7,6 +7,7 @@ signal local_hp_changed(hp: float)
 signal local_respawned
 
 const MAX_HP := 100.0
+const BOT_ID_BASE := 100000
 const TEAM_COLORS := [Color(0.7, 0.12, 0.1), Color(0.12, 0.3, 0.8)]
 
 var peer_id := 1
@@ -15,6 +16,10 @@ var pname := ""
 var hp := MAX_HP
 var dead := false
 var is_auth := false
+var is_bot := false
+var bot_move := Vector3.ZERO
+var bot_sprint := false
+var bot_jump := false
 var input_blocked := false
 var frozen := false # round freeze time (bomb mode): can look, can't move or shoot
 var carrying_bomb := false
@@ -38,10 +43,11 @@ var _hurt_t := 0.0
 
 func _enter_tree() -> void:
 	peer_id = name.to_int()
-	set_multiplayer_authority(peer_id)
+	is_bot = peer_id >= BOT_ID_BASE
+	set_multiplayer_authority(1 if is_bot else peer_id)
 
 func _ready() -> void:
-	is_auth = is_multiplayer_authority()
+	is_auth = is_multiplayer_authority() and not is_bot
 	camera_start_position = camera.position
 	camera.current = is_auth
 	$UI.visible = is_auth
@@ -52,9 +58,14 @@ func _ready() -> void:
 	if not is_auth:
 		fps_hands.visible = false
 		fps_hands.process_mode = Node.PROCESS_MODE_DISABLED
-		set_physics_process(false)
+		if not (is_bot and multiplayer.is_server()):
+			set_physics_process(false)
 	else:
 		fps_hands.firing.connect(func(): _shoot_t = 0.12)
+	if is_bot and multiplayer.is_server():
+		var brain := preload("res://main/bot_brain.gd").new()
+		brain.name = "Brain"
+		add_child(brain)
 	_apply_team_color()
 	for a in ["Death01", "Pistol_Shoot", "Hit_Chest"]:
 		if anim_player.has_animation(a):
@@ -77,6 +88,9 @@ func _apply_team_color() -> void:
 func set_input_blocked(v: bool) -> void:
 	input_blocked = v
 	_update_hands()
+
+func flag_shot() -> void: # bots: mark a shot so the shoot animation syncs
+	_shoot_t = 0.15
 
 func _update_hands() -> void:
 	if not is_auth: return
@@ -102,6 +116,15 @@ func _input(event: InputEvent) -> void:
 		rotate_y(deg_to_rad(event.relative.x * MOUSE_SENSITIVITY * -1))
 
 func _process(delta: float) -> void:
+	if is_bot:
+		if multiplayer.is_server():
+			_shoot_t = maxf(_shoot_t - delta, 0.0)
+			_choose_anim()
+		if anim != _last_anim:
+			_last_anim = anim
+			anim_player.play(anim, 0.15)
+		_aim_spine()
+		return
 	if is_auth:
 		if not dead and not input_blocked:
 			super(delta)
@@ -128,9 +151,30 @@ func _physics_process(delta: float) -> void:
 	if dead or input_blocked or frozen:
 		if not is_on_floor():
 			velocity.y -= gravity * delta
+		velocity.y = minf(velocity.y, JUMP_VELOCITY)
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 		velocity.z = move_toward(velocity.z, 0, SPEED)
 		move_and_slide()
+		if global_position.y > 12.0 or global_position.y < -8.0:
+			global_position = Vector3(0, 1.5, 0) if not is_inside_tree() else get_tree().current_scene.pick_spawn(team)
+			velocity = Vector3.ZERO
+		return
+	if is_bot:
+		if not is_on_floor():
+			velocity.y -= gravity * delta
+		elif bot_jump:
+			velocity.y = JUMP_VELOCITY
+		bot_jump = false
+		var sp := SPEED * (2.2 if bot_sprint else 1.1)
+		velocity.x = bot_move.x * sp
+		velocity.z = bot_move.z * sp
+		velocity.y = minf(velocity.y, JUMP_VELOCITY) # depenetration can catapult; never fly
+		running = bot_sprint
+		move_and_slide()
+		if global_position.y > 12.0 or global_position.y < -8.0:
+			# escaped the map (squeezed between colliders): put the bot back on its spawn side
+			global_position = get_tree().current_scene.pick_spawn(team)
+			velocity = Vector3.ZERO
 		return
 	super(delta)
 

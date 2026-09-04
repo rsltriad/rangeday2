@@ -25,5 +25,5 @@ res://test/Player.tscn::cd1cadd49688c9975d6cb203145f3366::1788091440::res://.god
 res://test/world.tscn::804b27476e6e36e60a06d6e4044f6862::1788096221::res://.godot/exported/133200997/export-169c9a3b26aefcf8b19860e409d13f30-world.scn
 res://main/Game.tscn::8667bf61abb2c651e08e422cacc53ea1::1788138113::res://.godot/exported/133200997/export-6b8b7cb0efd3eb3375cb2f243cd1eb21-Game.scn
 res://main/Menu.tscn::07d18b4849dff7cb4341937c5af5608b::1788096221::res://.godot/exported/133200997/export-e53adf27fa1701b748ddd3ef590a2a79-Menu.scn
-res://main/NetPlayer.tscn::0e0e38d5cfc24a66ae098749d0664598::1788096306::res://.godot/exported/133200997/export-60d527fee85cbb21029037a37bbe5507-NetPlayer.scn
+res://main/NetPlayer.tscn::f6797cde8663a0712557a64a1ba9ff19::1788528113::res://.godot/exported/133200997/export-60d527fee85cbb21029037a37bbe5507-NetPlayer.scn
 res://test/range.tscn::ba108f1bda348f49467605fb83e1a6dc::1788096221::res://.godot/exported/133200997/export-74be8624ae2c76c1ca36ea5af93eee86-range.scn

@@ -7,6 +7,7 @@ const GameSettings = preload("res://main/settings.gd")
 static var my_name := ""
 static var is_host := false
 static var mode := "tdm" # "tdm" | "bomb"
+static var bots := 4
 
 var name_edit: LineEdit
 var ip_edit: LineEdit
@@ -54,6 +55,18 @@ func _build_ui() -> void:
 	mode_pick.selected = 1 if mode == "bomb" else 0
 	mode_pick.item_selected.connect(func(i): mode = "bomb" if i == 1 else "tdm")
 	box.add_child(mode_pick)
+	var bot_row := HBoxContainer.new()
+	var bot_lbl := Label.new()
+	bot_lbl.text = "Robot players (host picks)"
+	bot_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bot_row.add_child(bot_lbl)
+	var bot_pick := SpinBox.new()
+	bot_pick.min_value = 0
+	bot_pick.max_value = 6
+	bot_pick.value = bots
+	bot_pick.value_changed.connect(func(v): bots = int(v))
+	bot_row.add_child(bot_pick)
+	box.add_child(bot_row)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	box.add_child(row)
