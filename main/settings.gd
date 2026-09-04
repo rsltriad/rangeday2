@@ -9,6 +9,7 @@ static var fullscreen := false
 static var sensitivity := 0.06
 static var fov := 75.0
 static var volume := 100.0
+static var map_light := "sunny" # "sunny" (training-lab sun) | "soft" (no sun, ambient only)
 
 static func load_cfg() -> void:
 	if loaded: return
@@ -19,6 +20,7 @@ static func load_cfg() -> void:
 		sensitivity = cfg.get_value("input", "sensitivity", 0.06)
 		fov = cfg.get_value("video", "fov", 75.0)
 		volume = cfg.get_value("audio", "volume", 100.0)
+		map_light = cfg.get_value("video", "map_light", "sunny")
 	apply_global()
 
 static func save_cfg() -> void:
@@ -27,6 +29,7 @@ static func save_cfg() -> void:
 	cfg.set_value("input", "sensitivity", sensitivity)
 	cfg.set_value("video", "fov", fov)
 	cfg.set_value("audio", "volume", volume)
+	cfg.set_value("video", "map_light", map_light)
 	cfg.save(PATH)
 
 static func apply_global() -> void:
@@ -68,6 +71,20 @@ static func make_panel() -> PanelContainer:
 		func(val):
 			volume = val
 			apply_global()))
+	var ml_row := HBoxContainer.new()
+	var ml_lbl := Label.new()
+	ml_lbl.text = "Map lighting"
+	ml_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ml_row.add_child(ml_lbl)
+	var ml := OptionButton.new()
+	ml.add_item("Sunny (like training)", 0)
+	ml.add_item("Soft (no sun)", 1)
+	ml.selected = 1 if map_light == "soft" else 0
+	ml.item_selected.connect(func(i):
+		map_light = "soft" if i == 1 else "sunny"
+		save_cfg())
+	ml_row.add_child(ml)
+	v.add_child(ml_row)
 	return panel
 
 static func _slider_row(text: String, minv: float, maxv: float, step: float, value: float, fmt: String, on_change: Callable) -> VBoxContainer:

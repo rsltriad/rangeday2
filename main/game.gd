@@ -62,6 +62,7 @@ func setup(m: String) -> void:
 	map.name = "Map"
 	add_child(map)
 	_prepare_map(map)
+	_apply_map_light()
 	if mode == "bomb":
 		# The compound's ground quad has no usable collision: add an explicit floor at y=0.
 		var floor_body := StaticBody3D.new()
@@ -71,21 +72,48 @@ func setup(m: String) -> void:
 		add_child(floor_body)
 		$Bomb.setup(self)
 
-## Collision + material fix for Poly Pizza maps: they ship every surface as metallic 0.4 /
-## roughness 0.27, which reflects the whole sky and washes the map out white.
+## Rebuild the downloaded map the training-lab way: identical geometry, but every
+## surface gets a fresh plain StandardMaterial3D (the lab's material type) instead of
+## the imported Poly Pizza materials (metallic 0.4 / low roughness — the white wash).
 func _prepare_map(map: Node) -> void:
-	var fixed := {}
+	var remap := {}
 	for mi in map.find_children("*", "MeshInstance3D", true, false):
 		mi.create_trimesh_collision()
 		for i in mi.mesh.get_surface_count():
-			var mat: Material = mi.mesh.surface_get_material(i)
-			if mat is BaseMaterial3D and not fixed.has(mat):
-				fixed[mat] = true
-				mat.metallic = 0.0
-				mat.roughness = 1.0
-				mat.specular = 0.15
-				var c: Color = mat.albedo_color
-				mat.albedo_color = Color.from_hsv(c.h, minf(c.s, 0.62), minf(c.v, 0.74), c.a)
+			var src: Material = mi.mesh.surface_get_material(i)
+			if not remap.has(src):
+				var c := Color(0.8, 0.8, 0.8)
+				if src is BaseMaterial3D: c = src.albedo_color
+				var mat := StandardMaterial3D.new()
+				mat.albedo_color = Color.from_hsv(c.h, minf(c.s, 0.6), clampf(c.v, 0.12, 0.8), c.a)
+				remap[src] = mat
+			mi.set_surface_override_material(i, remap[src])
+
+var _sun: DirectionalLight3D = null
+var _light_mode := ""
+
+func _apply_map_light() -> void:
+	if GameSettings.map_light == _light_mode: return
+	_light_mode = GameSettings.map_light
+	var env: Environment = $WorldEnvironment.environment
+	if _light_mode == "sunny":
+		if _sun == null:
+			_sun = DirectionalLight3D.new()
+			# The training lab's sun, verbatim (test/range.tscn).
+			_sun.transform = Transform3D(
+				Vector3(0.715256, 7.45058e-09, -0.698862),
+				Vector3(-0.512636, 0.679657, -0.524662),
+				Vector3(0.474987, 0.73353, 0.486129),
+				Vector3(0, 20, 0))
+			_sun.shadow_enabled = true
+			_sun.directional_shadow_max_distance = 130.0
+			_sun.shadow_normal_bias = 3.0
+			add_child(_sun)
+		_sun.visible = true
+		env.ambient_light_energy = 1.0
+	else:
+		if _sun: _sun.visible = false
+		env.ambient_light_energy = 1.35
 
 func pick_spawn(team: int) -> Vector3:
 	var list: Array
@@ -299,6 +327,7 @@ func _on_local_died(killer_id: int) -> void:
 
 func _process(_delta: float) -> void:
 	board.visible = Input.is_key_pressed(KEY_TAB)
+	_apply_map_light()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
