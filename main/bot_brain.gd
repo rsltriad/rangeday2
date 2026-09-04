@@ -69,7 +69,8 @@ func _pick_objective() -> void:
 		var b = g.get_node("Bomb")
 		if b.phase == "live" and b.is_attacker(p.team):
 			if b.carrier == p.peer_id:
-				var site: Vector3 = b.SITES["A"] if p.global_position.distance_to(b.SITES["A"]) < p.global_position.distance_to(b.SITES["B"]) else b.SITES["B"]
+				var sd: Dictionary = g.sites()
+				var site: Vector3 = sd["A"] if p.global_position.distance_to(sd["A"]) < p.global_position.distance_to(sd["B"]) else sd["B"]
 				objective = site
 				has_objective = true
 				b.interact_from(p.peer_id, b._site_at(p.global_position) != "")
@@ -91,8 +92,8 @@ func _pick_objective() -> void:
 		has_objective = false
 		return
 	if not has_objective or p.global_position.distance_to(objective) < 3.0:
-		var lim := 34.0 if _game().mode == "bomb" else Vector2(20, 42).y
-		objective = Vector3(randf_range(-20, 20), 0, randf_range(-lim, lim))
+		var w: Vector2 = _game().wander_bounds()
+		objective = Vector3(randf_range(-w.x, w.x), 0, randf_range(-w.y, w.y))
 		has_objective = true
 
 func _act(delta: float) -> void:

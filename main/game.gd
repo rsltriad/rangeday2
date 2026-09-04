@@ -8,14 +8,29 @@ const TEAM_COLORS := [Color(0.9, 0.25, 0.2), Color(0.25, 0.5, 1.0)]
 const NetPlayerScene := preload("res://main/NetPlayer.tscn")
 const MenuScript := preload("res://main/menu.gd")
 # Two ends of the yard (map is 50 x 100 m, long axis = Z).
-const SPAWNS_BOMB := [ # [attackers, defenders] on the compound (walls at ±50)
-	[Vector3(-12, 1, 38), Vector3(-6, 1, 38), Vector3(0, 1, 38), Vector3(6, 1, 38), Vector3(12, 1, 38)],
-	[Vector3(-12, 1, -38), Vector3(-6, 1, -38), Vector3(0, 1, -38), Vector3(6, 1, -38), Vector3(12, 1, -38)],
-]
-const SPAWNS := [
-	[Vector3(-12, 1.5, 40), Vector3(-6, 1.5, 40), Vector3(0, 1.5, 40), Vector3(6, 1.5, 40), Vector3(12, 1.5, 40)],
-	[Vector3(-12, 1.5, -40), Vector3(-6, 1.5, -40), Vector3(0, 1.5, -40), Vector3(6, 1.5, -40), Vector3(12, 1.5, -40)],
-]
+# Per-map data: scene, scale, optional explicit floor, spawn rows (tdm = [team0, team1],
+# bomb = [attackers, defenders]), bomb sites, bot wander bounds (x, z).
+const MAPS := {
+	"yard": {
+		"label": "Yard", "scene": "res://main/map_yard.glb", "scale": 1.0,
+		"tdm": [[Vector3(-12, 1.5, 40), Vector3(-6, 1.5, 40), Vector3(0, 1.5, 40), Vector3(6, 1.5, 40), Vector3(12, 1.5, 40)],
+			[Vector3(-12, 1.5, -40), Vector3(-6, 1.5, -40), Vector3(0, 1.5, -40), Vector3(6, 1.5, -40), Vector3(12, 1.5, -40)]],
+		"bomb": [[Vector3(-12, 1.5, 40), Vector3(-6, 1.5, 40), Vector3(0, 1.5, 40), Vector3(6, 1.5, 40), Vector3(12, 1.5, 40)],
+			[Vector3(-12, 1.5, -40), Vector3(-6, 1.5, -40), Vector3(0, 1.5, -40), Vector3(6, 1.5, -40), Vector3(12, 1.5, -40)]],
+		"sites": {"A": Vector3(-6, 0.2, 0), "B": Vector3(0, 0.2, 30)},
+		"wander": Vector2(20, 42),
+	},
+	"compound": {
+		"label": "Compound", "scene": "res://main/map_compound.glb", "scale": 0.5, "floor_y": 0.0,
+		"tdm": [[Vector3(-12, 1, 38), Vector3(-6, 1, 38), Vector3(0, 1, 38), Vector3(6, 1, 38), Vector3(12, 1, 38)],
+			[Vector3(-12, 1, -38), Vector3(-6, 1, -38), Vector3(0, 1, -38), Vector3(6, 1, -38), Vector3(12, 1, -38)]],
+		"bomb": [[Vector3(-12, 1, 38), Vector3(-6, 1, 38), Vector3(0, 1, 38), Vector3(6, 1, 38), Vector3(12, 1, 38)],
+			[Vector3(-12, 1, -38), Vector3(-6, 1, -38), Vector3(0, 1, -38), Vector3(6, 1, -38), Vector3(12, 1, -38)]],
+		"sites": {"A": Vector3(-9, 0, -3), "B": Vector3(8, 0, 20)},
+		"wander": Vector2(30, 34),
+	},
+}
+var map_id := "yard"
 
 var mode := "tdm"
 const BOT_ID_BASE := 100000
@@ -36,6 +51,8 @@ var pause_panel: PanelContainer
 var settings_panel: PanelContainer = null
 var paused := false
 const GameSettings := preload("res://main/settings.gd")
+const Account := preload("res://main/account.gd")
+var _coin_kills := -1
 
 func _ready() -> void:
 	_build_hud()
@@ -45,7 +62,7 @@ func _ready() -> void:
 	print("[game] ready as peer ", multiplayer.get_unique_id(), " server=", multiplayer.is_server(), " peers=", multiplayer.get_peers())
 	if multiplayer.is_server():
 		multiplayer.peer_connected.connect(func(id): print("[game] peer connected ", id))
-		setup(MenuScript.mode)
+		setup(MenuScript.mode, MenuScript.map)
 		_register(1, MenuScript.my_name)
 		for i in clampi(MenuScript.bots, 0, 6):
 			_register(BOT_ID_BASE + i, BOT_NAMES[i])
@@ -54,27 +71,32 @@ func _ready() -> void:
 
 # ---------- map / mode ----------
 @rpc("authority", "reliable")
-func setup(m: String) -> void:
+func setup(m: String, mid: String) -> void:
 	if has_node("Map"): return
 	mode = m
-	var map: Node3D
-	if mode == "bomb":
-		map = load("res://main/map_compound.glb").instantiate()
-		map.scale = Vector3(0.5, 0.5, 0.5)
-	else:
-		map = load("res://main/map_yard.glb").instantiate()
+	map_id = mid if MAPS.has(mid) else "yard"
+	var data: Dictionary = MAPS[map_id]
+	var map: Node3D = load(data.scene).instantiate()
+	map.scale = Vector3.ONE * data.scale
 	map.name = "Map"
 	add_child(map)
 	_prepare_map(map)
 	_apply_map_light()
-	if mode == "bomb":
-		# The compound's ground quad has no usable collision: add an explicit floor at y=0.
+	if data.has("floor_y"):
 		var floor_body := StaticBody3D.new()
 		var cs := CollisionShape3D.new()
 		cs.shape = WorldBoundaryShape3D.new()
 		floor_body.add_child(cs)
+		floor_body.position.y = data.floor_y
 		add_child(floor_body)
+	if mode == "bomb":
 		$Bomb.setup(self)
+
+func sites() -> Dictionary:
+	return MAPS[map_id].sites
+
+func wander_bounds() -> Vector2:
+	return MAPS[map_id].wander
 
 ## Rebuild the downloaded map the training-lab way: identical geometry, but every
 ## surface gets a fresh plain StandardMaterial3D (the lab's material type) instead of
@@ -122,9 +144,9 @@ func _apply_map_light() -> void:
 func pick_spawn(team: int) -> Vector3:
 	var list: Array
 	if mode == "bomb":
-		list = SPAWNS_BOMB[0 if $Bomb.is_attacker(team) else 1]
+		list = MAPS[map_id]["bomb"][0 if $Bomb.is_attacker(team) else 1]
 	else:
-		list = SPAWNS[clampi(team, 0, 1)]
+		list = MAPS[map_id]["tdm"][clampi(team, 0, 1)]
 	return list[randi() % list.size()]
 
 # ---------- players / teams (server) ----------
@@ -147,7 +169,7 @@ func _register(id: int, pname: String) -> void:
 	feed.rpc("%s joined %s" % [pname, TEAM_NAMES[team]])
 	# Late joiner learns about everyone already in the match.
 	if id != 1:
-		setup.rpc_id(id, mode)
+		setup.rpc_id(id, mode, map_id)
 		for p in players_root.get_children():
 			spawn_player.rpc_id(id, p.peer_id, p.team, p.position, p.pname)
 	spawn_player.rpc(id, team, pick_spawn(team), pname)
@@ -309,7 +331,20 @@ func _build_hud() -> void:
 	hud.add_child(hint)
 	_refresh_hud()
 
+func _grant_kill_coins() -> void:
+	var me_id := multiplayer.get_unique_id()
+	if not players.has(me_id): return
+	var k: int = players[me_id].kills
+	if _coin_kills < 0:
+		_coin_kills = k
+		return
+	if k > _coin_kills and Account.logged_in:
+		Account.add_coins((k - _coin_kills) * Account.COINS_PER_KILL)
+		feed("+%d coins (%d total)" % [(k - _coin_kills) * Account.COINS_PER_KILL, Account.coins])
+	_coin_kills = maxi(k, _coin_kills)
+
 func _refresh_hud() -> void:
+	_grant_kill_coins()
 	if mode != "bomb":
 		score_label.text = "RED %d   -   %d BLUE" % [scores[0], scores[1]]
 	var txt := ""

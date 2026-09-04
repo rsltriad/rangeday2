@@ -14,7 +14,6 @@ const SITE_RADIUS := 5.0
 const DEFUSE_RADIUS := 2.5
 const PICKUP_RADIUS := 1.6
 const EXPLOSION_RADIUS := 14.0
-const SITES := {"A": Vector3(-9, 0, -3), "B": Vector3(8, 0, 20)}
 
 var game: Node3D
 var active := false
@@ -45,9 +44,9 @@ var bar: ProgressBar
 func setup(g: Node3D) -> void:
 	game = g
 	active = true
-	for k in SITES:
+	for k in game.sites():
 		var n := Node3D.new()
-		n.position = SITES[k]
+		n.position = game.sites()[k]
 		var disc := MeshInstance3D.new()
 		var cyl := CylinderMesh.new()
 		cyl.top_radius = SITE_RADIUS
@@ -241,8 +240,8 @@ func on_player_died(p: Node) -> void: # called by game.report_kill on the server
 		_broadcast()
 
 func _site_at(pos: Vector3) -> String:
-	for k in SITES:
-		var s: Vector3 = SITES[k]
+	for k in game.sites():
+		var s: Vector3 = game.sites()[k]
 		if Vector2(pos.x - s.x, pos.z - s.z).length() < SITE_RADIUS and absf(pos.y - s.y) < 4.0:
 			return k
 	return ""
@@ -363,9 +362,14 @@ func bomb_show(pos: Vector3) -> void:
 func bomb_hide() -> void:
 	bomb_mesh.visible = false
 
+const Account := preload("res://main/account.gd")
+
 @rpc("authority", "call_local", "reliable")
 func round_over(winner: int, reason: String, w: Array) -> void:
 	wins = w
+	var me = _player(multiplayer.get_unique_id())
+	if me and me.team == winner and Account.logged_in:
+		Account.add_coins(Account.COINS_ROUND_WIN)
 	game.center_label.modulate = game.TEAM_COLORS[winner]
 	game.center_label.text = "%s WIN THE ROUND\n%s" % [game.TEAM_NAMES[winner], reason]
 	get_tree().create_timer(ROUND_END_TIME - 0.5).timeout.connect(func(): if game.center_label.text.ends_with(reason): game.center_label.text = "")

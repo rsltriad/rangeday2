@@ -7,6 +7,7 @@ signal local_hp_changed(hp: float)
 signal local_respawned
 
 const MAX_HP := 100.0
+const Account := preload("res://main/account.gd")
 const BOT_ID_BASE := 100000
 const TEAM_COLORS := [Color(0.7, 0.12, 0.1), Color(0.12, 0.3, 0.8)]
 
@@ -32,6 +33,13 @@ var aiming := false
 var _last_anim := ""
 var _shoot_t := 0.0
 var _hurt_t := 0.0
+var _skin_weapon: Node = null
+var _skin_id := "?"
+var cheat_aim := false
+var cheat_vision := false
+var _key_b := false
+var _key_v := false
+var _esp_t := 0.0
 
 @onready var fps_hands: Node3D = $Camera3D/FpsHands
 @onready var body: Node3D = $Body
@@ -134,6 +142,11 @@ func _process(delta: float) -> void:
 		aiming = fps_hands.ads
 		_shoot_t = maxf(_shoot_t - delta, 0.0)
 		_choose_anim()
+		if fps_hands.weapon != _skin_weapon or Account.equipped != _skin_id:
+			_skin_weapon = fps_hands.weapon
+			_skin_id = Account.equipped
+			Account.apply_weapon_skin(fps_hands)
+		_cheats(delta)
 		var e := Input.is_physical_key_pressed(KEY_E) and not dead and not input_blocked and not frozen
 		if e != _e_held:
 			_e_held = e
@@ -201,6 +214,73 @@ func _aim_spine() -> void:
 	if idx < 0: return
 	var q := Quaternion(Vector3.RIGHT, -cam_pitch * 0.6)
 	skeleton.set_bone_pose_rotation(idx, skeleton.get_bone_pose_rotation(idx) * q)
+
+# ---------- admin cheats (B = auto aim, V = vision) ----------
+func _cheats(delta: float) -> void:
+	if not Account.is_admin: return
+	var b := Input.is_physical_key_pressed(KEY_B)
+	if b and not _key_b:
+		cheat_aim = not cheat_aim
+		_cheat_note("AUTO AIM %s" % ("ON" if cheat_aim else "OFF"))
+	_key_b = b
+	var vv := Input.is_physical_key_pressed(KEY_V)
+	if vv and not _key_v:
+		cheat_vision = not cheat_vision
+		_cheat_note("VISION %s" % ("ON" if cheat_vision else "OFF"))
+		if not cheat_vision:
+			_esp(false)
+	_key_v = vv
+	if cheat_aim and not dead and not input_blocked and not frozen:
+		_auto_aim(delta)
+	if cheat_vision:
+		_esp_t -= delta
+		if _esp_t <= 0.0:
+			_esp_t = 0.4
+			_esp(true)
+
+func _cheat_note(t: String) -> void:
+	var g := get_tree().current_scene
+	if g and g.get("center_label"):
+		g.center_label.modulate = Color(1, 0.9, 0.3)
+		g.center_label.text = t
+		get_tree().create_timer(1.2).timeout.connect(func(): if g.center_label.text == t: g.center_label.text = "")
+
+func _auto_aim(delta: float) -> void:
+	var best: Node3D = null
+	var best_d := 70.0
+	var space := get_world_3d().direct_space_state
+	for q in get_parent().get_children():
+		if q == self or q.dead or q.team == team: continue
+		var d: float = global_position.distance_to(q.global_position)
+		if d >= best_d: continue
+		var ray := PhysicsRayQueryParameters3D.create(camera.global_position, q.global_position + Vector3(0, 1.2, 0), 1)
+		ray.exclude = [get_rid()]
+		var hit := space.intersect_ray(ray)
+		if hit.has("collider") and hit.collider == q:
+			best = q
+			best_d = d
+	if best == null: return
+	var to := best.global_position + Vector3(0, 1.35, 0) - camera.global_position
+	var want_yaw := atan2(-to.x, -to.z)
+	var k := minf(16.0 * delta, 1.0)
+	rotation.y = lerp_angle(rotation.y, want_yaw, k)
+	var want_pitch := clampf(atan2(to.y, Vector2(to.x, to.z).length()), clamp_min, clamp_max)
+	camera.rotation.x = lerpf(camera.rotation.x, want_pitch, k)
+
+func _esp(on: bool) -> void:
+	for q in get_parent().get_children():
+		if q == self or q.body_mesh == null: continue
+		if on:
+			if q.body_mesh.material_override == null:
+				var m := StandardMaterial3D.new()
+				m.no_depth_test = true
+				m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+				m.albedo_color = Color(1, 0.15, 0.1) if q.team != team else Color(0.3, 1.0, 0.3)
+				q.body_mesh.material_override = m
+			q.name_label.no_depth_test = true
+		else:
+			q.body_mesh.material_override = null
+			q.name_label.no_depth_test = false
 
 # ---------- damage (server authoritative) ----------
 func _on_fps_hands_give_damage(obj: Node3D, damage: float, point: Vector3) -> void:
